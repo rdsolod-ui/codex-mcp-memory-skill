@@ -1,0 +1,22 @@
+name: Validate skill
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  helpers:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m unittest discover -s tests -v
+      - shell: pwsh
+        run: |
+          $files = @('install.ps1','skills/codex-mcp-memory/scripts/snapshot.ps1')
+          foreach ($file in $files) {
+            $errors = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile((Join-Path $PWD $file), [ref]$null, [ref]$errors)
+            if ($errors.Count) { throw "PowerShell parse errors: $file" }
+          }
+          ./install.ps1 -Destination (Join-Path $env:RUNNER_TEMP 'codex-mcp-memory-test')

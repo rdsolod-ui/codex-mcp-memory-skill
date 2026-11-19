@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex MCP Memory"
+  short_description: "Measure MCP memory and preserve active chats"
+  default_prompt: "Use $codex-mcp-memory to measure Codex and MCP memory, review completed chats safely, and preserve active work and history."
