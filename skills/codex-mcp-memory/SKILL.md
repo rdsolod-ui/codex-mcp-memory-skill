@@ -2,12 +2,12 @@
 name: codex-mcp-memory
 description: Diagnose Codex Desktop and local MCP memory growth, measure process cohorts, and safely review completed chats for a one-time runtime unload while preserving history and active work. Use for Codex RAM pressure or repeated MCP process sets, not general operating-system cleanup.
 metadata:
-  version: "0.1.0"
+  version: "0.2.0"
 ---
 
 # Codex MCP memory
 
-This is a Windows-first diagnostic and guarded recovery skill, not a complete RAM fix. Installation adds instructions and read-only helpers; it does not change Codex settings, install an idle proxy, or start a watcher.
+This is a Windows-first diagnostic and guarded recovery skill, not a complete RAM fix. Installation adds instructions, read-only helpers and an opt-in stdio proxy; it does not activate the proxy, change Codex settings, or start a watcher.
 
 ## Establish the boundary
 
@@ -44,7 +44,7 @@ The cohort is an array of `{ "pid": ..., "createdUtc": "..." }` from the before 
 
 ## Recurring idle behavior
 
-Read [idle-proxy-contract.md](references/idle-proxy-contract.md) only when analyzing or adapting an existing idle proxy. v0.1.0 does not ship or install a proxy. Never turn a previously validated local profile into a universal allowlist. REPLs, browsers, in-memory jobs, subscriptions and native-app bindings remain protected unless restoration is demonstrated for that exact contract.
+Read [idle-proxy-contract.md](references/idle-proxy-contract.md) and [proxy-setup.md](references/proxy-setup.md) before using the opt-in proxy. Diagnose live child processes separately from parked proxy connections and old unwrapped launches. For reviewed stateless or durable-state servers use `idle`. For a reviewed server that creates no user state during discovery, `until-first-use` may release an unused catalog-only process; the first non-catalog operation permanently pins it. Existing browser/REPL sessions, jobs and unreviewed bindings stay protected. Never apply a profile solely by server name, and never replace live active connections to roll out new code.
 
 ## Finish with evidence
 

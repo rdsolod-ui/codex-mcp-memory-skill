@@ -1,6 +1,6 @@
 # Optional idle proxy analysis
 
-This reference describes acceptance criteria for an existing or separately requested proxy. No proxy is installed by this skill. A small process count is not the goal if it destroys active state.
+This reference describes acceptance criteria for opt-in lifecycle management. Installation copies the proxy script but does not activate it or change MCP launchers. A small process count is not the goal if it destroys active state.
 
 An eligible stdio proxy must retain the client connection and stop only its own child after an explicit idle policy with no outstanding client or reverse requests. An idle CPU is not evidence of inactivity. State must live in a verified durable file/service or be reconstructible from the complete request and initialization contract.
 
