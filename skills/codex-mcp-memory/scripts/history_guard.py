@@ -31,21 +31,41 @@ def backup(files,output):
     with (output/'receipt.json').open('x',encoding='utf-8') as f:json.dump(doc,f,ensure_ascii=False,indent=2)
     return doc
 
-def verify(receipt):
+def prefix_sha(path,size):
+    h=hashlib.sha256()
+    with path.open('rb') as f:
+        remaining=size
+        while remaining:
+            block=f.read(min(1024*1024,remaining))
+            if not block:return None
+            h.update(block);remaining-=len(block)
+    return h.hexdigest()
+
+def verify(receipt,allow_append=False):
     receipt=Path(receipt);doc=json.loads(receipt.read_text(encoding='utf-8-sig'));results=[]
     for row in doc['files']:
         name=row['backup']
         if Path(name).name!=name:raise ValueError('Invalid backup name')
         saved=receipt.parent/name;original=Path(row['source'])
-        results.append({'source':str(original),'backupIntact':saved.is_file() and sha(saved)==row['sha256'],
-                        'sourceUnchanged':original.is_file() and sha(original)==row['sha256']})
-    return {'allUnchanged':bool(results) and all(x['backupIntact'] and x['sourceUnchanged'] for x in results),'files':results}
+        intact=saved.is_file() and sha(saved)==row['sha256']
+        unchanged=original.is_file() and sha(original)==row['sha256']
+        result={'source':str(original),'backupIntact':intact,'sourceUnchanged':unchanged}
+        if allow_append:
+            size=row.get('bytes')
+            if type(size) is not int or size<0:raise ValueError('Invalid baseline byte count')
+            result['sourcePrefixUnchanged']=bool(intact and saved.stat().st_size==size and original.is_file() and prefix_sha(original,size)==row['sha256'])
+        results.append(result)
+    answer={'allUnchanged':bool(results) and all(x['backupIntact'] and x['sourceUnchanged'] for x in results),'files':results}
+    if allow_append:
+        answer['allPreserved']=bool(results) and all(x['sourcePrefixUnchanged'] for x in results)
+        answer['note']='Prefix verification preserves legitimate appends; it does not verify a database, explain new content, or authorize an unload.'
+    return answer
 
 def main():
     p=argparse.ArgumentParser(description=__doc__);s=p.add_subparsers(dest='command',required=True)
     b=s.add_parser('backup');b.add_argument('--output',required=True,type=Path);b.add_argument('files',nargs='+',type=Path)
-    v=s.add_parser('verify');v.add_argument('receipt',type=Path);args=p.parse_args()
-    result=backup(args.files,args.output) if args.command=='backup' else verify(args.receipt)
+    v=s.add_parser('verify');v.add_argument('receipt',type=Path);v.add_argument('--allow-append',action='store_true',help='Verify intact original bytes after an independently verified legitimate new turn; no restoration');args=p.parse_args()
+    result=backup(args.files,args.output) if args.command=='backup' else verify(args.receipt,args.allow_append)
     print(json.dumps(result,ensure_ascii=False,indent=2))
-    if args.command=='verify' and not result['allUnchanged']:raise SystemExit(2)
+    if args.command=='verify' and not result['allPreserved' if args.allow_append else 'allUnchanged']:raise SystemExit(2)
 if __name__=='__main__':main()

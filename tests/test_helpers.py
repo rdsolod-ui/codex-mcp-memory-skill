@@ -44,4 +44,25 @@ class HistoryTests(unittest.TestCase):
     def test_path_traversal_receipt_refused(self):
         receipt=self.root/'receipt.json';receipt.write_text(json.dumps({'files':[{'backup':'../secret','source':str(self.source),'sha256':'bad'}]}))
         with self.assertRaises(ValueError):history.verify(receipt)
+    def test_explicit_append_verification_preserves_original_utf8_bytes(self):
+        output=self.root/'backup';history.backup([self.source],output)
+        with self.source.open('ab') as f:f.write('{"new":"Продолжение"}\n'.encode('utf-8'))
+        result=history.verify(output/'receipt.json',allow_append=True)
+        self.assertTrue(result['allPreserved']);self.assertFalse(result['allUnchanged'])
+        self.assertFalse(history.verify(output/'receipt.json')['allUnchanged'])
+    def test_append_mode_rejects_changed_prefix_and_truncation(self):
+        output=self.root/'backup';history.backup([self.source],output)
+        baseline=self.source.read_bytes()
+        self.source.write_bytes(b'!'+baseline[1:]+b'new turn')
+        self.assertFalse(history.verify(output/'receipt.json',True)['allPreserved'])
+        self.source.write_bytes(baseline[:-1])
+        self.assertFalse(history.verify(output/'receipt.json',True)['allPreserved'])
+    def test_append_mode_requires_intact_backup_and_valid_size(self):
+        output=self.root/'backup';history.backup([self.source],output)
+        receipt=output/'receipt.json';doc=json.loads(receipt.read_text())
+        doc['files'][0]['bytes']=-1;receipt.write_text(json.dumps(doc))
+        with self.assertRaises(ValueError):history.verify(receipt,True)
+        doc['files'][0]['bytes']=self.source.stat().st_size;receipt.write_text(json.dumps(doc))
+        (output/'000.jsonl').write_bytes(b'changed')
+        self.assertFalse(history.verify(receipt,True)['allPreserved'])
 if __name__=='__main__':unittest.main()

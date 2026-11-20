@@ -2,7 +2,7 @@
 name: codex-mcp-memory
 description: Diagnose Codex Desktop and local MCP memory growth, measure process cohorts, and safely review completed chats for a one-time runtime unload while preserving history and active work. Use for Codex RAM pressure or repeated MCP process sets, not general operating-system cleanup.
 metadata:
-  version: "0.2.0"
+  version: "0.2.1"
 ---
 
 # Codex MCP memory
@@ -28,9 +28,11 @@ The evidence directory must already exist outside a public repository. A snapsho
 
 Report private committed bytes separately from the sum of working sets. Working sets share pages and cannot be summed into unique physical RAM. Also report system free physical memory, sampling races and excluded/uncertain processes. The diagnostic command itself may appear among other descendants.
 
+For a natural idle/unload observation, read [native-retention.md](references/native-retention.md). A completed turn and an inactive UI view are different conditions; do not start an owner-retention timer from turn completion alone. Keep observation bounded and report an interrupted interval as incomplete.
+
 ## One-time release of eligible completed chats
 
-Read [completed-chat-unload.md](references/completed-chat-unload.md) before any mutation. Use the native mechanism only when it is available and has been verified for the current Desktop version. Preserve history and metadata, recheck immediately before each action, and restore visibility immediately after archive even if a later step fails. Never automate periodic archiving.
+Read [completed-chat-unload.md](references/completed-chat-unload.md) and [history-formats.md](references/history-formats.md) before any mutation. A rollout JSONL backup alone is insufficient for paginated history. Use the native mechanism only when it is available and has been verified for the current Desktop version. Preserve history and metadata, recheck immediately before each action, and restore visibility immediately after archive even if a later step fails. Never automate periodic archiving.
 
 If the family is active or owns uncertain state, skip it. Do not kill its MCP processes, wait for it to become eligible and silently act later, interrupt it, or tell another chat to stop. If nothing qualifies, report **zero action-attributed savings**. Natural memory fluctuations are not cleanup savings.
 

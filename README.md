@@ -2,11 +2,11 @@
 
 A Windows-first Codex skill for investigating growing MCP process sets, measuring memory, and safely reviewing completed chats for a **one-time runtime unload** without sacrificing history or active work.
 
-**v0.2.0 adds an opt-in MCP lifecycle proxy.** It can release reviewed unused servers while preserving the client connection. It does not fix every source of Desktop RAM growth, automatically change configuration, periodically archive chats, kill processes by name, or restart the application.
+**v0.2.1 adds current-history safeguards and evidence-based native retention checks.** The opt-in proxy from v0.2.0 can release reviewed unused servers while preserving the client connection. This package does not fix every source of Desktop RAM growth, automatically change configuration, periodically archive chats, kill processes by name, or restart the application.
 
 ## Install
 
-Download the `v0.2.0` release ZIP, extract it, review the scripts, then run in PowerShell:
+Download the `v0.2.1` release ZIP, extract it, review the scripts, then run in PowerShell:
 
 ```powershell
 ./install.ps1
@@ -32,7 +32,8 @@ verified completed chats; preserve active tasks and history.
 - A focused skill with a protected-chat policy and a guarded native archive → immediate unarchive procedure, conditional on verified Desktop behavior.
 - A read-only Windows process-tree snapshot with PID/creation-time identity and explicit uncertainty in MCP classification.
 - A Python snapshot comparison helper. It separates exited identities from overall memory churn; it cannot establish ownership or causal savings by itself.
-- A JSONL history backup/verification helper that never restores or edits chat history.
+- A JSONL history backup/verification helper with strict verification by default and explicit prefix verification after a legitimate appended turn. It never restores or edits history and is not a SQLite backup tool.
+- Guardrails for paginated history and a bounded native-retention observation that accounts for active UI views, application shutdown and incomplete test windows.
 - An opt-in stdio proxy with `idle`, `until-first-use` and `pinned` modes, reviewed-source guards, serialized shutdown/wake and no mutation replay. Host-specific profiles are deliberately not included.
 
 Requirements: Codex with skills support; Windows PowerShell with CIM and Get-Process for snapshots; Python 3.10+ standard library for comparison/history helpers. Native chat-management tools are required for the optional unload. Without them, the skill stops at diagnosis. No new MCP server or background service is needed.
@@ -51,7 +52,7 @@ The initial release is tested on native Windows; it does not claim macOS/Linux l
 python -m unittest discover -s tests -v
 ```
 
-Tests cover PID reuse, root replacement, cohort errors, history mutation detection, duplicate inputs, protocol sleep/wake, first-use state preservation, pending calls, health pings, source changes, process failure and EOF cleanup. Run the bundled Codex skill validator when available, then test installation into a new temporary directory. The release records the exact tested source revision.
+Tests cover PID reuse, root replacement, cohort errors, history mutation/truncation detection, preserved UTF-8 prefixes after append, duplicate inputs, protocol sleep/wake, first-use state preservation, pending calls, health pings, source changes, process failure and EOF cleanup. Run the bundled Codex skill validator when available, then test installation into a new temporary directory. The release records the exact tested source revision.
 
 ## Lifecycle setup
 
@@ -66,6 +67,8 @@ New settings apply to new connections. Already-running active chats retain their
 `0.1.0`: diagnostics and guarded recovery, with explicit unresolved RAM scope.
 
 `0.2.0`: opt-in lifecycle proxy, unused catalog-only stateful-server mode, heartbeat fix and protocol tests. Native session unloading, already-used stateful integrations and Desktop/backend memory remain outside automatic management. Real local server tests and isolated protocol tests are distinct from applying the new code in every existing chat. See release notes for actual validation scope.
+
+`0.2.1`: paginated-history safeguards, explicit JSONL prefix verification and bounded native-retention checks. The proxy is unchanged. The real three-hour Desktop release/resume test remains incomplete; see [sanitized session evidence](skills/codex-mcp-memory/references/session-evidence.md).
 
 Русский запрос для Codex: «Используй $codex-mcp-memory: замерь память Codex и MCP, не трогай активные чаты, освободи только проверенные завершённые задачи и сохрани историю». Полное автоматическое решение RAM в этой версии не заявляется.
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1 - 2026-11-20
+
+- Require current history-format discovery before unloading: a rollout-only backup is insufficient for paginated storage; unknown or incomplete backups block mutation.
+- Add explicit `history_guard.py verify --allow-append` for preserving original JSONL bytes after an independently verified legitimate new turn. Strict verification remains the default; no history is restored or edited.
+- Distinguish completed turns from inactive UI views when observing native retention. Record owner unsubscription, process exit and next-call success separately; interrupted observation is incomplete.
+- Include sanitized measurements and tested limits from the Windows session. Preserve the v0.2.0 proxy unchanged and do not claim completion of the three-hour Desktop release/resume test or the overall RAM fix.
+
 ## 0.2.0 - 2026-11-19
 
 - Ship an opt-in stdio lifecycle proxy, with private reviewed profiles rather than a universal allowlist.

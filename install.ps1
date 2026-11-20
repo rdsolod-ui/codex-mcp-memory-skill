@@ -37,4 +37,4 @@ foreach($file in $files){
 if(Test-Path -LiteralPath $target){throw 'Destination appeared during installation; staging preserved'}
 # Directory.Move is non-overwriting on the same filesystem.
 [IO.Directory]::Move($stage,$target)
-[pscustomobject]@{version='0.2.0';destination=$target;files=$manifest;runtimeChanged=$false;note='Installed files only. Existing chats may not rediscover skills immediately.'}|ConvertTo-Json -Depth 5
+[pscustomobject]@{version='0.2.1';destination=$target;files=$manifest;runtimeChanged=$false;note='Installed files only. Existing chats may not rediscover skills immediately.'}|ConvertTo-Json -Depth 5
